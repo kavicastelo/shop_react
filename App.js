@@ -3,18 +3,51 @@ import axios from "axios";
 import {
     View, Text, StyleSheet, TextInput, TouchableOpacity, Platform, Modal, Image
 } from "react-native";
+import {Table, Row, Rows} from 'react-native-table-component';
+
+
+const rows = [];
+const records = [];
 
 export default class App extends Component {
+    constructor(props) {
+        super(props);
 
-    state={
-        loading:false
-}
-    id='';
-    name='';
-    address='';
-    salary=0;
+        this.state = {
+            tableHead: ['ID','Name','Address','Salary'],
+            customers: [],
+            loading: false,
+            tableData: rows
+        }
 
-    saveCustomer(){
+        this.id = '';
+        this.name = '';
+        this.address = '';
+        this.salary = 0;
+    }
+
+    componentDidMount() {
+
+        axios.get("http://127.0.0.1:3000/api/v1/customer/list"
+        ).then((resp) => {
+            records.push(resp.data.data);
+
+            records.forEach((item)=>{
+                rows.push(
+                    item._id || 'ID',
+                    item.name,
+                    item.address,
+                    item.salary
+                )
+            })
+            console.log(rows);
+        }).catch(error => {
+            console.log(error);
+            this.setLoadingState();
+        })
+    }
+
+    saveCustomer() {
 
         this.setLoadingState();
         axios.post("http://127.0.0.1:3000/api/v1/customer/save", {
@@ -32,12 +65,12 @@ export default class App extends Component {
         })
     }
 
-    findCustomer(){
+    findCustomer() {
 
         this.setLoadingState();
         axios.get("http://127.0.0.1:3000/api/v1/customer/find", {
-            params:{
-                id:this.id
+            params: {
+                id: this.id
             }
         }).then((resp) => {
             console.log(resp);
@@ -49,7 +82,7 @@ export default class App extends Component {
         })
     }
 
-    updateCustomer(){
+    updateCustomer() {
 
         this.setLoadingState();
         axios.put("http://127.0.0.1:3000/api/v1/customer/update", {
@@ -57,7 +90,7 @@ export default class App extends Component {
             address: this.address,
             salary: this.salary
 
-        },{
+        }, {
             headers: {
                 id: this.id
             }
@@ -71,12 +104,12 @@ export default class App extends Component {
         })
     }
 
-    deleteCustomer(){
+    deleteCustomer() {
 
         this.setLoadingState();
         axios.delete("http://127.0.0.1:3000/api/v1/customer/delete", {
-            params:{
-                id:this.id
+            params: {
+                id: this.id
             }
         }).then((resp) => {
             console.log(resp);
@@ -88,11 +121,11 @@ export default class App extends Component {
         })
     }
 
-    setLoadingState(){
-        this.setState({loading:!this.state.loading})
+    setLoadingState() {
+        this.setState({loading: !this.state.loading})
     }
 
-    clearTextFields(){
+    clearTextFields() {
         this.id = '';
         this.name = '';
         this.address = '';
@@ -102,6 +135,7 @@ export default class App extends Component {
     render() {
 
         const loading = this.state.loading;
+        const state = this.state;
 
         return (
             <View style={styles.body}>
@@ -120,43 +154,68 @@ export default class App extends Component {
                 </Modal>
                 <View style={styles.topOuter}>
                     <TextInput
-                        onChangeText={(text)=>{this.id=text}}
+                        onChangeText={(text) => {
+                            this.id = text
+                        }}
                         style={styles.input}
                         placeholder='Customer Id'
                     />
                     <TextInput
-                        onChangeText={(text)=>{this.name=text}}
+                        onChangeText={(text) => {
+                            this.name = text
+                        }}
                         style={styles.input}
                         placeholder='Name'
                     />
                     <TextInput
-                        onChangeText={(text)=>{this.address=text}}
+                        onChangeText={(text) => {
+                            this.address = text
+                        }}
                         style={styles.input}
                         placeholder='Address'
                     />
                     <TextInput
-                        onChangeText={(text)=>{this.salary=Number.parseInt(text)}}
+                        onChangeText={(text) => {
+                            this.salary = Number.parseInt(text)
+                        }}
                         style={styles.input}
                         placeholder='Salary'
                     />
 
                     <View style={styles.buttonBar}>
-                        <TouchableOpacity style={styles.button} onPress={()=>{this.saveCustomer()}}>
+                        <TouchableOpacity style={styles.button} onPress={() => {
+                            this.saveCustomer()
+                        }}>
                             <Text style={styles.buttonText}>Save</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.button} onPress={()=>{this.findCustomer()}}>
+                        <TouchableOpacity style={styles.button} onPress={() => {
+                            this.findCustomer()
+                        }}>
                             <Text style={styles.buttonText}>Find</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.button} onPress={()=>{this.updateCustomer()}}>
+                        <TouchableOpacity style={styles.button} onPress={() => {
+                            this.updateCustomer()
+                        }}>
                             <Text style={styles.buttonText}>Update</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.button} onPress={()=>{this.deleteCustomer()}}>
+                        <TouchableOpacity style={styles.button} onPress={() => {
+                            this.deleteCustomer()
+                        }}>
                             <Text style={styles.buttonText}>Delete</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.button}>
                             <Text style={styles.buttonText}>Load All</Text>
                         </TouchableOpacity>
                     </View>
+                </View>
+                <View style={styles.bottomOuter}>
+                    <Table borderStyle={{borderWidth: 2, borderColor: '#c8e1ff'}}>
+                        <Row data={state.tableHead}
+                             style={styles.head}
+                             textStyle={styles.text}/>
+                        <Rows data={state.tableData}
+                              textStyle={styles.text}/>
+                    </Table>
                 </View>
             </View>
         )
@@ -171,6 +230,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center'
     },
     topOuter: {
+        flex: 1,
+        padding: 10,
+    },
+    bottomOuter: {
         flex: 1,
         padding: 10,
     },
@@ -199,21 +262,23 @@ const styles = StyleSheet.create({
         fontSize: 15,
     },
     modal: {
-        flex:1,
-        backgroundColor:'rgba(44, 62, 80,0.3)',
-        alignItems:'center',
-        justifyContent:'center'
+        flex: 1,
+        backgroundColor: 'rgba(44, 62, 80,0.3)',
+        alignItems: 'center',
+        justifyContent: 'center'
     },
     loading: {
-        height:200,
-        width:'80%',
-        backgroundColor:'white',
-        borderRadius:20,
-        alignItems:'center',
-        justifyContent:'center'
+        height: 200,
+        width: '80%',
+        backgroundColor: 'white',
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center'
     },
     loadingImg: {
         width: 150,
-        height:'100%'
-    }
+        height: '100%'
+    },
+    head: { height: 40, backgroundColor: '#f1f8ff' },
+    text: { margin: 6 }
 })
