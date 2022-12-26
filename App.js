@@ -49,6 +49,45 @@ export default class App extends Component {
         })
     }
 
+    updateCustomer(){
+
+        this.setLoadingState();
+        axios.put("http://127.0.0.1:3000/api/v1/customer/update", {
+            name: this.name,
+            address: this.address,
+            salary: this.salary
+
+        },{
+            headers: {
+                id: this.id
+            }
+        }).then((resp) => {
+            console.log(resp);
+            this.clearTextFields();
+            this.setLoadingState();
+        }).catch(error => {
+            console.log(error);
+            this.setLoadingState();
+        })
+    }
+
+    deleteCustomer(){
+
+        this.setLoadingState();
+        axios.delete("http://127.0.0.1:3000/api/v1/customer/delete", {
+            params:{
+                id:this.id
+            }
+        }).then((resp) => {
+            console.log(resp);
+            this.clearTextFields();
+            this.setLoadingState();
+        }).catch(error => {
+            console.log(error);
+            this.setLoadingState();
+        })
+    }
+
     setLoadingState(){
         this.setState({loading:!this.state.loading})
     }
@@ -108,10 +147,10 @@ export default class App extends Component {
                         <TouchableOpacity style={styles.button} onPress={()=>{this.findCustomer()}}>
                             <Text style={styles.buttonText}>Find</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.button}>
+                        <TouchableOpacity style={styles.button} onPress={()=>{this.updateCustomer()}}>
                             <Text style={styles.buttonText}>Update</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.button}>
+                        <TouchableOpacity style={styles.button} onPress={()=>{this.deleteCustomer()}}>
                             <Text style={styles.buttonText}>Delete</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.button}>
